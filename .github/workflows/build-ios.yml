@@ -1,0 +1,61 @@
+# Save this file as: .github/workflows/build-ios.yml in your repo root
+# (GitHub only recognizes workflow files inside that exact folder path)
+#
+# What this does:
+# 1. Spins up a free macOS runner whenever you push code
+# 2. Builds your Xcode project without a real Mac
+# 3. Packages the result as an unsigned .ipa you can download from the
+#    "Actions" tab of your repo, under this run's "Artifacts" section
+#
+# NOTE: this build is UNSIGNED. Signing happens on your side using
+# AltServer + your free Apple ID when you sideload it onto your iPhone.
+# That's normal and expected — don't try to sign inside this workflow,
+# it overcomplicates things for no benefit at your stage.
+
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main ]        # runs automatically every time you push to main
+  workflow_dispatch:          # also lets you trigger it manually from the GitHub website
+
+jobs:
+  build:
+    runs-on: macos-latest      # this is the free Apple-hosted macOS cloud machine
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Generate GymApp.xcodeproj (no local Xcode needed — this
+          step does what File > New > Project would do by hand)
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      # ---- EDIT THESE THREE VALUES to match your actual project ----
+      - name: Build app (unsigned, for sideloading)
+        run: |
+          xcodebuild \
+            -project GymApp.xcodeproj \
+            -scheme GymApp \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            -derivedDataPath build \
+            clean build
+
+      - name: Package as .ipa
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/GymApp.app Payload/
+          zip -r GymApp.ipa Payload
+
+      - name: Upload .ipa as downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GymApp-ipa
+          path: GymApp.ipa

@@ -1,0 +1,44 @@
+# Generates GymApp.xcodeproj automatically on GitHub's macOS runner —
+# this is what solves "no Mac, so no Xcode GUI to create a project in".
+# Installed and run via `xcodegen generate` as a build-ios.yml step,
+# right before xcodebuild. You never touch this file's output directly;
+# edit this spec instead and let CI regenerate the project every push.
+
+name: GymApp
+options:
+  bundleIdPrefix: com.dipesh
+
+targets:
+  GymApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: App
+      - path: Models
+      - path: Database
+        excludes:
+          - "schema.sql"
+      - path: HealthKit
+      - path: Equipment
+      - path: Views
+    resources:
+      - path: Resources/Assets.xcassets
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        NSHealthShareUsageDescription: "Used to read your workout and body metrics so this app can track progress alongside Apple Health."
+        NSHealthUpdateUsageDescription: "Used to save your logged workouts to Apple Health so they appear in the Fitness app."
+        NSCameraUsageDescription: "Used to photograph gym equipment so the app can identify it and show usage instructions."
+    entitlements:
+      path: GymApp.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dipesh.gymapp
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

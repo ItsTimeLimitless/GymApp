@@ -1,0 +1,13 @@
+<!--
+Add these keys inside your project's Info.plist (Xcode: select the
+target > Info tab > right-click > Add Row, or edit the raw XML).
+-->
+
+<key>NSHealthShareUsageDescription</key>
+<string>Used to read your workout and body metrics so this app can track progress alongside Apple Health.</string>
+
+<key>NSHealthUpdateUsageDescription</key>
+<string>Used to save your logged workouts to Apple Health so they appear in the Fitness app.</string>
+
+<key>NSCameraUsageDescription</key>
+<string>Used to photograph gym equipment so the app can identify it and show usage instructions.</string>
