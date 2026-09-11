@@ -62,8 +62,12 @@ struct ExercisePreviewView: View {
     }
 
     private func loadImage(frame: Int) -> UIImage? {
-        guard let demoAssetId else { return nil }
-        return UIImage(named: "\(demoAssetId)_\(frame)")
+        guard let demoAssetId,
+              let url = Bundle.main.url(forResource: "\(frame)", withExtension: "jpg", subdirectory: "PhotoAssets/\(demoAssetId)"),
+              let data = try? Data(contentsOf: url) else {
+            return nil
+        }
+        return UIImage(data: data)
     }
 }
 

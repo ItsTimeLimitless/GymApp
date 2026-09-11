@@ -1,6 +1,5 @@
 import Foundation
 import SQLite3
-import UIKit
 
 /// SQLite's SQLITE_TRANSIENT isn't imported automatically into Swift —
 /// this tells sqlite3_bind_text/_blob to copy the buffer immediately,
@@ -36,20 +35,22 @@ final class Database {
     }
 
     /// One known demo photo, checked at launch — a canary for whether
-    /// the Assets.xcassets catalog made it into the app bundle
-    /// correctly. schema.sql (a loose file) and a split two-catalog
-    /// setup both silently failed to bundle earlier, so this also dumps
-    /// the actual bundle contents on failure — real evidence instead of
-    /// guessing a third time.
+    /// the photos actually made it into this build. Two earlier
+    /// approaches (a loose schema.sql file, then a proper .xcassets
+    /// catalog) both silently failed on real hardware — the asset
+    /// catalog specifically because actool wasn't running at all in
+    /// this unsigned CI build (confirmed: no Assets.car in the bundle).
+    /// This version is copied straight into the .app bundle by the CI
+    /// packaging script itself, bypassing Xcode's resource pipeline
+    /// entirely, so there's no build-phase behavior left to depend on.
     private func checkDemoPhotosBundled() {
-        if UIImage(named: "Barbell_Full_Squat_0") != nil {
-            Self.log("✅ Exercise demo photos found in asset catalog")
+        if Bundle.main.url(forResource: "0", withExtension: "jpg", subdirectory: "PhotoAssets/Barbell_Full_Squat") != nil {
+            Self.log("✅ Exercise demo photos found in bundle")
         } else {
             Self.log("❌ Exercise demo photos NOT found — Preview buttons will show \"no demo photo\" for everything")
             if let resourcePath = Bundle.main.resourcePath,
                let contents = try? FileManager.default.contentsOfDirectory(atPath: resourcePath) {
-                let hasAssetsCar = contents.contains("Assets.car")
-                Self.log("ℹ️ Bundle has Assets.car: \(hasAssetsCar). Top-level bundle contents: \(contents.prefix(15).joined(separator: ", "))")
+                Self.log("ℹ️ Top-level bundle contents: \(contents.prefix(15).joined(separator: ", "))")
             }
         }
     }

@@ -52,6 +52,13 @@ jobs:
         run: |
           mkdir -p Payload
           cp -r build/Build/Products/Release-iphoneos/GymApp.app Payload/
+          # Exercise demo photos are copied in directly here rather than
+          # through Xcode's own resource-compile pipeline — a real
+          # device test showed Xcode's asset catalog compiler (actool)
+          # wasn't running for this unsigned build, silently dropping
+          # every bundled image with no build error. A plain file copy
+          # at packaging time doesn't depend on that pipeline at all.
+          cp -r Resources/PhotoAssets Payload/GymApp.app/PhotoAssets
           zip -r GymApp.ipa Payload
 
       - name: Upload .ipa as downloadable artifact
