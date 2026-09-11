@@ -13,22 +13,30 @@ struct WorkoutPreviewView: View {
 
     var body: some View {
         List {
-            ForEach(exercises) { exercise in
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(exercise.name)
-                            .font(.headline)
-                        Text("\(exercise.targetSets) sets × \(exercise.targetRepsMin)–\(exercise.targetRepsMax) reps")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+            Section {
+                ForEach(exercises) { exercise in
+                    HStack(spacing: 12) {
+                        ExerciseThumbnailView(demoAssetId: exercise.demoAssetId)
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(exercise.name)
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("\(exercise.targetSets) sets · \(exercise.targetRepsMin)–\(exercise.targetRepsMax) reps")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer(minLength: 8)
+
+                        VStack(spacing: 10) {
+                            ExercisePreviewButton(exerciseName: exercise.name, demoAssetId: exercise.demoAssetId)
+                            Button("Swap") { swapTarget = exercise }
+                                .font(.system(size: 13, weight: .medium))
+                                .buttonStyle(.borderless)
+                        }
                     }
-                    Spacer()
-                    ExercisePreviewButton(exerciseName: exercise.name, demoAssetId: exercise.demoAssetId)
-                    Button("Swap") { swapTarget = exercise }
-                        .font(.subheadline)
-                        .buttonStyle(.borderless)
+                    .padding(.vertical, 6)
                 }
-                .padding(.vertical, 4)
             }
         }
         .listStyle(.insetGrouped)
@@ -102,7 +110,15 @@ private struct ExerciseSwapView: View {
                 if !alternates.isEmpty {
                     Section("Already in the library") {
                         ForEach(alternates, id: \.id) { alternate in
-                            Button(alternate.name) { pick(alternate.id, alternate.name, alternate.incrementKg, alternate.demoAssetId) }
+                            Button {
+                                pick(alternate.id, alternate.name, alternate.incrementKg, alternate.demoAssetId)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    ExerciseThumbnailView(demoAssetId: alternate.demoAssetId, size: 44)
+                                    Text(alternate.name)
+                                        .foregroundColor(.primary)
+                                }
+                            }
                         }
                     }
                 }

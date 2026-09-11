@@ -29,9 +29,16 @@ struct ExercisePreviewView: View {
                             .scaledToFit()
                             .opacity(showingSecondFrame ? 1 : 0)
                     }
+                    // Scoped directly to this ZStack via .animation(value:)
+                    // rather than a global withAnimation() call — that's
+                    // what was leaking the repeating loop into unrelated
+                    // parts of the screen (the toolbar's "Done" button
+                    // included), since withAnimation applies to the whole
+                    // transaction, not just the view it's called near.
+                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: showingSecondFrame)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .padding(.horizontal)
-                    .onAppear { loopAnimation() }
+                    .onAppear { showingSecondFrame = true }
                 } else {
                     VStack(spacing: 8) {
                         Image(systemName: "photo")
@@ -55,12 +62,6 @@ struct ExercisePreviewView: View {
         }
     }
 
-    private func loopAnimation() {
-        withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true).delay(0.3)) {
-            showingSecondFrame = true
-        }
-    }
-
     private func loadImage(frame: Int) -> UIImage? {
         guard let demoAssetId,
               let url = Bundle.main.url(forResource: "\(frame)", withExtension: "jpg", subdirectory: "PhotoAssets/\(demoAssetId)"),
@@ -68,6 +69,36 @@ struct ExercisePreviewView: View {
             return nil
         }
         return UIImage(data: data)
+    }
+}
+
+/// Small rounded thumbnail — frame 0 of the demo sequence, or a
+/// placeholder icon if there isn't one. Used directly in exercise list
+/// rows so you can recognize a movement at a glance without opening
+/// the full preview.
+struct ExerciseThumbnailView: View {
+    let demoAssetId: String?
+    var size: CGFloat = 54
+
+    var body: some View {
+        Group {
+            if let demoAssetId,
+               let url = Bundle.main.url(forResource: "0", withExtension: "jpg", subdirectory: "PhotoAssets/\(demoAssetId)"),
+               let data = try? Data(contentsOf: url),
+               let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                ZStack {
+                    Color(.secondarySystemBackground)
+                    Image(systemName: "figure.strengthtraining.traditional")
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 

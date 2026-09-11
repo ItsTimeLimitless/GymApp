@@ -35,28 +35,47 @@ struct TemplatePickerView: View {
                                     onStart(session, exercises)
                                 })
                             } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack(spacing: 8) {
-                                        Text(template.name)
-                                            .font(.headline)
-                                        if template.id == suggestedTemplateId {
-                                            Text("NEXT")
-                                                .font(.system(size: 10, weight: .bold))
-                                                .padding(.horizontal, 6)
-                                                .padding(.vertical, 2)
-                                                .background(GymTheme.accent)
-                                                .foregroundColor(.black)
-                                                .clipShape(Capsule())
+                                HStack(spacing: 14) {
+                                    ZStack {
+                                        Circle().fill(GymTheme.accent.opacity(0.15))
+                                        Image(systemName: "dumbbell.fill")
+                                            .font(.system(size: 19))
+                                            .foregroundColor(GymTheme.accent)
+                                    }
+                                    .frame(width: 46, height: 46)
+
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack(spacing: 8) {
+                                            Text(template.name)
+                                                .font(.system(size: 17, weight: .semibold))
+                                            if template.id == suggestedTemplateId {
+                                                Text("NEXT")
+                                                    .font(.system(size: 10, weight: .bold))
+                                                    .padding(.horizontal, 6)
+                                                    .padding(.vertical, 2)
+                                                    .background(GymTheme.accent)
+                                                    .foregroundColor(.black)
+                                                    .clipShape(Capsule())
+                                            }
+                                        }
+                                        // A quick row of thumbnails so the
+                                        // workout is recognizable at a
+                                        // glance, not just by name.
+                                        if let exercises = exercisesByTemplate[template.id], !exercises.isEmpty {
+                                            HStack(spacing: 4) {
+                                                ForEach(exercises.prefix(4)) { exercise in
+                                                    ExerciseThumbnailView(demoAssetId: exercise.demoAssetId, size: 24)
+                                                }
+                                                if exercises.count > 4 {
+                                                    Text("+\(exercises.count - 4)")
+                                                        .font(.system(size: 11))
+                                                        .foregroundColor(.secondary)
+                                                }
+                                            }
                                         }
                                     }
-                                    if let exercises = exercisesByTemplate[template.id], !exercises.isEmpty {
-                                        Text(exercises.map(\.name).joined(separator: ", "))
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                            .lineLimit(1)
-                                    }
                                 }
-                                .padding(.vertical, 4)
+                                .padding(.vertical, 6)
                             }
                         }
                     } header: {
